@@ -480,6 +480,26 @@ func (r *ReconcileArgoCD) reconcileRedisDeployment(cr *argoproj.ArgoCD, useTLS b
 		},
 	}
 
+	// Apply custom annotations to pod template
+	if cr.Spec.Redis.Annotations != nil {
+		if deploy.Spec.Template.Annotations == nil {
+			deploy.Spec.Template.Annotations = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Annotations {
+			deploy.Spec.Template.Annotations[key] = value
+		}
+	}
+
+	// Apply custom labels to pod template
+	if cr.Spec.Redis.Labels != nil {
+		if deploy.Spec.Template.Labels == nil {
+			deploy.Spec.Template.Labels = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Labels {
+			deploy.Spec.Template.Labels[key] = value
+		}
+	}
+
 	if err := applyReconcilerHook(cr, deploy, ""); err != nil {
 		return err
 	}
@@ -1093,12 +1113,18 @@ func (r *ReconcileArgoCD) reconcileServerDeployment(cr *argoproj.ArgoCD, useTLSF
 	}
 
 	if cr.Spec.Server.Annotations != nil {
+		if deploy.Spec.Template.Annotations == nil {
+			deploy.Spec.Template.Annotations = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Server.Annotations {
 			deploy.Spec.Template.Annotations[key] = value
 		}
 	}
 
 	if cr.Spec.Server.Labels != nil {
+		if deploy.Spec.Template.Labels == nil {
+			deploy.Spec.Template.Labels = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Server.Labels {
 			deploy.Spec.Template.Labels[key] = value
 		}

@@ -400,6 +400,26 @@ func (r *ReconcileArgoCD) reconcileNotificationsDeployment(cr *argoproj.ArgoCD, 
 		WorkingDir: "/app",
 	}}
 
+	// Apply custom annotations to pod template
+	if cr.Spec.Notifications.Annotations != nil {
+		if desiredDeployment.Spec.Template.Annotations == nil {
+			desiredDeployment.Spec.Template.Annotations = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Notifications.Annotations {
+			desiredDeployment.Spec.Template.Annotations[key] = value
+		}
+	}
+
+	// Apply custom labels to pod template
+	if cr.Spec.Notifications.Labels != nil {
+		if desiredDeployment.Spec.Template.Labels == nil {
+			desiredDeployment.Spec.Template.Labels = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Notifications.Labels {
+			desiredDeployment.Spec.Template.Labels[key] = value
+		}
+	}
+
 	return r.reconcileDeploymentHelper(cr, desiredDeployment, "notifications", cr.Spec.Notifications.Enabled)
 }
 

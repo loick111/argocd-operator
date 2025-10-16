@@ -355,13 +355,21 @@ func (r *ReconcileArgoCD) reconcileRepoDeployment(cr *argocdoperatorv1beta1.Argo
 		deploy.Spec.Replicas = replicas
 	}
 
+	// Apply custom annotations to pod template
 	if cr.Spec.Repo.Annotations != nil {
+		if deploy.Spec.Template.Annotations == nil {
+			deploy.Spec.Template.Annotations = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Repo.Annotations {
 			deploy.Spec.Template.Annotations[key] = value
 		}
 	}
 
+	// Apply custom labels to pod template
 	if cr.Spec.Repo.Labels != nil {
+		if deploy.Spec.Template.Labels == nil {
+			deploy.Spec.Template.Labels = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Repo.Labels {
 			deploy.Spec.Template.Labels[key] = value
 		}

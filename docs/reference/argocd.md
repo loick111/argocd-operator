@@ -588,6 +588,8 @@ Image | `argoproj/argocd` | The container image for all Argo CD components. This
 Version | *(recent Argo CD version)* | The tag to use with the Notifications container image.
 Resources | [Empty] | The container compute resources.
 LogLevel | info | The log level to be used by the ArgoCD Application Controller component. Valid options are debug, info, error, and warn.
+Labels | [Empty] | Custom labels to be applied to the notifications controller pods.
+Annotations | [Empty] | Custom annotations to be applied to the notifications controller pods.
 
 ### Notifications Controller Example
 
@@ -1002,6 +1004,8 @@ Image | `redis` | The container image for Redis. This overrides the `ARGOCD_REDI
 Resources | [Empty] | The container compute resources.
 Version | 5.0.3 (SHA) | The tag to use with the Redis container image.
 Remote | "" | Specifies the remote URL of redis running in external clusters, also disables Redis component. This field is optional.
+Labels | [Empty] | Custom labels to be applied to the redis pods.
+Annotations | [Empty] | Custom annotations to be applied to the redis pods.
 
 ### Redis Example
 
@@ -1645,6 +1649,8 @@ Version | v2.21.0 (SHA) | The tag to use with the Dex container image.
 Env | [Empty] | Environment to set for Dex.
 Volumes | [Empty] | Configure addition volumes for the Dex component. This field is optional.
 VolumeMounts | [Empty] | Configure addition volume mounts for the Dex component. This field is optional.
+Labels | [Empty] | Custom labels to pods deployed by the operator
+Annotations | [Empty] | Custom annotations to pods deployed by the operator
 
 ### Dex Example
 

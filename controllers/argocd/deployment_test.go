@@ -2970,3 +2970,101 @@ func TestDeploymentWithLongName(t *testing.T) {
 	// Verify that the pod template labels match
 	assert.Equal(t, repoDeployment.Name, repoDeployment.Spec.Template.Labels[common.ArgoCDKeyName])
 }
+
+func TestReconcileRepoServer_WithLabels(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Repo.Labels = map[string]string{
+			"custom-label":  "custom-value",
+			"another-label": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRepoDeployment(a, false))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-repo-server",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify custom labels are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "another-value", deployment.Spec.Template.Labels["another-label"])
+}
+
+func TestReconcileRepoServer_WithAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Repo.Annotations = map[string]string{
+			"custom-annotation":  "custom-value",
+			"another-annotation": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRepoDeployment(a, false))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-repo-server",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify custom annotations are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Annotations["custom-annotation"])
+	assert.Equal(t, "another-value", deployment.Spec.Template.Annotations["another-annotation"])
+}
+
+func TestReconcileRepoServer_WithLabelsAndAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Repo.Labels = map[string]string{
+			"custom-label": "custom-value",
+		}
+		a.Spec.Repo.Annotations = map[string]string{
+			"custom-annotation": "custom-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRepoDeployment(a, false))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-repo-server",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify both labels and annotations are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Annotations["custom-annotation"])
+}

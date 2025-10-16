@@ -288,6 +288,26 @@ func (r *ReconcileArgoCD) reconcileDexDeployment(cr *argoproj.ArgoCD) error {
 		if cr.Spec.SSO.Dex.VolumeMounts != nil {
 			dexVolumeMounts = append(dexVolumeMounts, cr.Spec.SSO.Dex.VolumeMounts...)
 		}
+
+		// Apply custom annotations to pod template
+		if cr.Spec.SSO.Dex.Annotations != nil {
+			if deploy.Spec.Template.Annotations == nil {
+				deploy.Spec.Template.Annotations = make(map[string]string)
+			}
+			for key, value := range cr.Spec.SSO.Dex.Annotations {
+				deploy.Spec.Template.Annotations[key] = value
+			}
+		}
+
+		// Apply custom labels to pod template
+		if cr.Spec.SSO.Dex.Labels != nil {
+			if deploy.Spec.Template.Labels == nil {
+				deploy.Spec.Template.Labels = make(map[string]string)
+			}
+			for key, value := range cr.Spec.SSO.Dex.Labels {
+				deploy.Spec.Template.Labels[key] = value
+			}
+		}
 	}
 
 	deploy.Spec.Template.Spec.Containers = []corev1.Container{{
@@ -449,6 +469,26 @@ func (r *ReconcileArgoCD) reconcileDexDeployment(cr *argoproj.ArgoCD) error {
 				explanation += ", "
 			}
 			explanation += "volumes"
+			changed = true
+		}
+
+		// Check if custom labels need to be updated
+		if !reflect.DeepEqual(deploy.Spec.Template.Labels, existing.Spec.Template.Labels) {
+			existing.Spec.Template.Labels = deploy.Spec.Template.Labels
+			if changed {
+				explanation += ", "
+			}
+			explanation += "pod template labels"
+			changed = true
+		}
+
+		// Check if custom annotations need to be updated
+		if !reflect.DeepEqual(deploy.Spec.Template.Annotations, existing.Spec.Template.Annotations) {
+			existing.Spec.Template.Annotations = deploy.Spec.Template.Annotations
+			if changed {
+				explanation += ", "
+			}
+			explanation += "pod template annotations"
 			changed = true
 		}
 

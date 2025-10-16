@@ -274,6 +274,12 @@ type ArgoCDDexSpec struct {
 
 	// VolumeMounts adds volumeMounts to the dex server container
 	VolumeMounts []corev1.VolumeMount `json:"volumeMounts,omitempty"`
+
+	// Annotations defines custom annotations to be applied to the dex pods
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Labels defines custom labels to be applied to the dex pods
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // ArgoCDGrafanaSpec defines the desired state for the Grafana component.
@@ -429,6 +435,12 @@ type ArgoCDNotifications struct {
 	// LogFormat refers to the log format used by the argocd-notifications. Defaults to ArgoCDDefaultLogFormat if not configured. Valid options are text or json.
 	// +kubebuilder:validation:Enum=text;json
 	LogFormat string `json:"logformat,omitempty"`
+
+	// Annotations defines custom annotations to be applied to the notifications controller pods
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Labels defines custom labels to be applied to the notifications controller pods
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 // ArgoCDPrometheusSpec defines the desired state for the Prometheus component.
@@ -506,6 +518,12 @@ type ArgoCDRedisSpec struct {
 
 	// Remote specifies the remote URL of the Redis container. (optional, by default, a local instance managed by the operator is used.)
 	Remote *string `json:"remote,omitempty"`
+
+	// Annotations defines custom annotations to be applied to the redis pods
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// Labels defines custom labels to be applied to the redis pods
+	Labels map[string]string `json:"labels,omitempty"`
 }
 
 func (a *ArgoCDRedisSpec) IsEnabled() bool {

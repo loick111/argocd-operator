@@ -569,3 +569,107 @@ func TestReconcileNotifications_testLogFormat(t *testing.T) {
 		t.Fatalf("operator failed to override the manual changes to notification controller logFormat:\n%s", diff)
 	}
 }
+
+func TestReconcileNotifications_WithLabels(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Notifications.Enabled = true
+		a.Spec.Notifications.Labels = map[string]string{
+			"custom-label":  "custom-value",
+			"another-label": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	sa := v1.ServiceAccount{}
+	assert.NoError(t, r.reconcileNotificationsDeployment(a, &sa))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-notifications-controller",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify custom labels are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "another-value", deployment.Spec.Template.Labels["another-label"])
+}
+
+func TestReconcileNotifications_WithAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Notifications.Enabled = true
+		a.Spec.Notifications.Annotations = map[string]string{
+			"custom-annotation":  "custom-value",
+			"another-annotation": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	sa := v1.ServiceAccount{}
+	assert.NoError(t, r.reconcileNotificationsDeployment(a, &sa))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-notifications-controller",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify custom annotations are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Annotations["custom-annotation"])
+	assert.Equal(t, "another-value", deployment.Spec.Template.Annotations["another-annotation"])
+}
+
+func TestReconcileNotifications_WithLabelsAndAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.Notifications.Enabled = true
+		a.Spec.Notifications.Labels = map[string]string{
+			"custom-label": "custom-value",
+		}
+		a.Spec.Notifications.Annotations = map[string]string{
+			"custom-annotation": "custom-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	sa := v1.ServiceAccount{}
+	assert.NoError(t, r.reconcileNotificationsDeployment(a, &sa))
+
+	deployment := &appsv1.Deployment{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-notifications-controller",
+			Namespace: a.Namespace,
+		},
+		deployment))
+
+	// Verify both labels and annotations are applied to pod template
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "custom-value", deployment.Spec.Template.Annotations["custom-annotation"])
+}

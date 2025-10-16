@@ -129,6 +129,20 @@ func (r *ReconcileArgoCD) reconcileRedisStatefulSet(cr *argoproj.ArgoCD) error {
 		},
 	}
 
+	// Apply custom annotations to pod template
+	if cr.Spec.Redis.Annotations != nil {
+		for key, value := range cr.Spec.Redis.Annotations {
+			ss.Spec.Template.Annotations[key] = value
+		}
+	}
+
+	// Apply custom labels to pod template
+	if cr.Spec.Redis.Labels != nil {
+		for key, value := range cr.Spec.Redis.Labels {
+			ss.Spec.Template.Labels[key] = value
+		}
+	}
+
 	ss.Spec.Template.Spec.Affinity = &corev1.Affinity{
 		PodAntiAffinity: &corev1.PodAntiAffinity{
 			RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{{
@@ -293,6 +307,26 @@ func (r *ReconcileArgoCD) reconcileRedisStatefulSet(cr *argoproj.ArgoCD) error {
 				},
 			},
 		},
+	}
+
+	// Apply custom annotations to pod template
+	if cr.Spec.Redis.Annotations != nil {
+		if ss.Spec.Template.Annotations == nil {
+			ss.Spec.Template.Annotations = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Annotations {
+			ss.Spec.Template.Annotations[key] = value
+		}
+	}
+
+	// Apply custom labels to pod template
+	if cr.Spec.Redis.Labels != nil {
+		if ss.Spec.Template.Labels == nil {
+			ss.Spec.Template.Labels = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Labels {
+			ss.Spec.Template.Labels[key] = value
+		}
 	}
 
 	ss.Spec.Template.Spec.InitContainers = []corev1.Container{{
@@ -843,12 +877,18 @@ func (r *ReconcileArgoCD) reconcileApplicationControllerStatefulSet(cr *argoproj
 	}
 
 	if cr.Spec.Controller.Annotations != nil {
+		if ss.Spec.Template.Annotations == nil {
+			ss.Spec.Template.Annotations = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Controller.Annotations {
 			ss.Spec.Template.Annotations[key] = value
 		}
 	}
 
 	if cr.Spec.Controller.Labels != nil {
+		if ss.Spec.Template.Labels == nil {
+			ss.Spec.Template.Labels = make(map[string]string)
+		}
 		for key, value := range cr.Spec.Controller.Labels {
 			ss.Spec.Template.Labels[key] = value
 		}
