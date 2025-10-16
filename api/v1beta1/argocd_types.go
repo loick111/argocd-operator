@@ -254,6 +254,14 @@ type ArgoCDDexSpec struct {
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Image",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:fieldGroup:Dex","urn:alm:descriptor:com.tectonic.ui:text"}
 	Image string `json:"image,omitempty"`
 
+	// Labels is the map of labels to be applied to the Dex resources.
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Labels",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:fieldGroup:Dex","urn:alm:descriptor:com.tectonic.ui:text"}
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations is the map of annotations to be applied to the Dex resources.
+	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Annotations",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:fieldGroup:Dex","urn:alm:descriptor:com.tectonic.ui:text"}
+	Annotations map[string]string `json:"annotations,omitempty"`
+
 	// OpenShiftOAuth enables OpenShift OAuth authentication for the Dex server.
 	//+operator-sdk:csv:customresourcedefinitions:type=spec,displayName="OpenShift OAuth Enabled'",xDescriptors={"urn:alm:descriptor:com.tectonic.ui:fieldGroup:Dex","urn:alm:descriptor:com.tectonic.ui:booleanSwitch"}
 	OpenShiftOAuth bool `json:"openShiftOAuth,omitempty"`
@@ -429,6 +437,12 @@ type ArgoCDNotifications struct {
 	// LogFormat refers to the log format used by the argocd-notifications. Defaults to ArgoCDDefaultLogFormat if not configured. Valid options are text or json.
 	// +kubebuilder:validation:Enum=text;json
 	LogFormat string `json:"logformat,omitempty"`
+
+	// Labels defines custom labels to be applied to the notifications controller pods
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations defines custom annotations to be applied to the notifications controller pods
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 // ArgoCDPrometheusSpec defines the desired state for the Prometheus component.
@@ -506,6 +520,12 @@ type ArgoCDRedisSpec struct {
 
 	// Remote specifies the remote URL of the Redis container. (optional, by default, a local instance managed by the operator is used.)
 	Remote *string `json:"remote,omitempty"`
+
+	// Labels defines custom labels to be applied to the redis pods
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations defines custom annotations to be applied to the redis pods
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 func (a *ArgoCDRedisSpec) IsEnabled() bool {

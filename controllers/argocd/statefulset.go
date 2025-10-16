@@ -295,6 +295,26 @@ func (r *ReconcileArgoCD) reconcileRedisStatefulSet(cr *argoproj.ArgoCD) error {
 		},
 	}
 
+	// Apply custom labels to pod template
+	if cr.Spec.Redis.Labels != nil {
+		if ss.Spec.Template.Labels == nil {
+			ss.Spec.Template.Labels = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Labels {
+			ss.Spec.Template.Labels[key] = value
+		}
+	}
+
+	// Apply custom annotations to pod template
+	if cr.Spec.Redis.Annotations != nil {
+		if ss.Spec.Template.Annotations == nil {
+			ss.Spec.Template.Annotations = make(map[string]string)
+		}
+		for key, value := range cr.Spec.Redis.Annotations {
+			ss.Spec.Template.Annotations[key] = value
+		}
+	}
+
 	ss.Spec.Template.Spec.InitContainers = []corev1.Container{{
 		Args: []string{
 			"/readonly-config/init.sh",

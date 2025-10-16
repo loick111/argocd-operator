@@ -77,7 +77,7 @@ func (src *ArgoCD) ConvertTo(dstRaw conversion.Hub) error {
 	dst.Spec.OIDCConfig = src.Spec.OIDCConfig
 	dst.Spec.Monitoring = v1beta1.ArgoCDMonitoringSpec(src.Spec.Monitoring)
 	dst.Spec.NodePlacement = (*v1beta1.ArgoCDNodePlacementSpec)(src.Spec.NodePlacement)
-	dst.Spec.Notifications = v1beta1.ArgoCDNotifications(src.Spec.Notifications)
+	dst.Spec.Notifications = *ConvertAlphaToBetaNotifications(&src.Spec.Notifications)
 	dst.Spec.Prometheus = *ConvertAlphaToBetaPrometheus(&src.Spec.Prometheus)
 	dst.Spec.RBAC = v1beta1.ArgoCDRBACSpec(src.Spec.RBAC)
 	dst.Spec.Redis = *ConvertAlphaToBetaRedis(&src.Spec.Redis)
@@ -152,7 +152,7 @@ func (dst *ArgoCD) ConvertFrom(srcRaw conversion.Hub) error {
 	dst.Spec.OIDCConfig = src.Spec.OIDCConfig
 	dst.Spec.Monitoring = ArgoCDMonitoringSpec(src.Spec.Monitoring)
 	dst.Spec.NodePlacement = (*ArgoCDNodePlacementSpec)(src.Spec.NodePlacement)
-	dst.Spec.Notifications = ArgoCDNotifications(src.Spec.Notifications)
+	dst.Spec.Notifications = *ConvertBetaToAlphaNotifications(&src.Spec.Notifications)
 	dst.Spec.Prometheus = *ConvertBetaToAlphaPrometheus(&src.Spec.Prometheus)
 	dst.Spec.RBAC = ArgoCDRBACSpec(src.Spec.RBAC)
 	dst.Spec.Redis = *ConvertBetaToAlphaRedis(&src.Spec.Redis)
@@ -324,6 +324,23 @@ func ConvertAlphaToBetaDex(src *ArgoCDDexSpec) *v1beta1.ArgoCDDexSpec {
 			Resources:      src.Resources,
 			Version:        src.Version,
 			Env:            nil,
+		}
+	}
+	return dst
+}
+
+func ConvertAlphaToBetaNotifications(src *ArgoCDNotifications) *v1beta1.ArgoCDNotifications {
+	var dst *v1beta1.ArgoCDNotifications
+	if src != nil {
+		dst = &v1beta1.ArgoCDNotifications{
+			Enabled:   src.Enabled,
+			Env:       src.Env,
+			Image:     src.Image,
+			LogLevel:  src.LogLevel,
+			Replicas:  src.Replicas,
+			Resources: src.Resources,
+			Version:   src.Version,
+			// Intentionally omit Labels and Annotations - they don't exist in v1alpha1
 		}
 	}
 	return dst
@@ -548,6 +565,23 @@ func ConvertBetaToAlphaDex(src *v1beta1.ArgoCDDexSpec) *ArgoCDDexSpec {
 			OpenShiftOAuth: src.OpenShiftOAuth,
 			Resources:      src.Resources,
 			Version:        src.Version,
+		}
+	}
+	return dst
+}
+
+func ConvertBetaToAlphaNotifications(src *v1beta1.ArgoCDNotifications) *ArgoCDNotifications {
+	var dst *ArgoCDNotifications
+	if src != nil {
+		dst = &ArgoCDNotifications{
+			Enabled:   src.Enabled,
+			Env:       src.Env,
+			Image:     src.Image,
+			LogLevel:  src.LogLevel,
+			Replicas:  src.Replicas,
+			Resources: src.Resources,
+			Version:   src.Version,
+			// Intentionally omit Labels and Annotations - they don't exist in v1alpha1
 		}
 	}
 	return dst

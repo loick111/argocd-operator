@@ -1106,3 +1106,104 @@ func TestStatefulSetWithLongName(t *testing.T) {
 	// Verify that the service name uses the component name (our fix)
 	assert.Equal(t, expectedComponentName, redisStatefulset.Spec.ServiceName)
 }
+
+func TestReconcileRedis_WithLabels(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.HA.Enabled = true
+		a.Spec.Redis.Labels = map[string]string{
+			"custom-label":  "custom-value",
+			"another-label": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRedisStatefulSet(a))
+
+	statefulset := &appsv1.StatefulSet{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-redis-ha-server",
+			Namespace: a.Namespace,
+		},
+		statefulset))
+
+	// Verify custom labels are applied to pod template
+	assert.Equal(t, "custom-value", statefulset.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "another-value", statefulset.Spec.Template.Labels["another-label"])
+}
+
+func TestReconcileRedis_WithAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.HA.Enabled = true
+		a.Spec.Redis.Annotations = map[string]string{
+			"custom-annotation":  "custom-value",
+			"another-annotation": "another-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRedisStatefulSet(a))
+
+	statefulset := &appsv1.StatefulSet{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-redis-ha-server",
+			Namespace: a.Namespace,
+		},
+		statefulset))
+
+	// Verify custom annotations are applied to pod template
+	assert.Equal(t, "custom-value", statefulset.Spec.Template.Annotations["custom-annotation"])
+	assert.Equal(t, "another-value", statefulset.Spec.Template.Annotations["another-annotation"])
+}
+
+func TestReconcileRedis_WithLabelsAndAnnotations(t *testing.T) {
+	logf.SetLogger(ZapLogger(true))
+	a := makeTestArgoCD(func(a *argoproj.ArgoCD) {
+		a.Spec.HA.Enabled = true
+		a.Spec.Redis.Labels = map[string]string{
+			"custom-label": "custom-value",
+		}
+		a.Spec.Redis.Annotations = map[string]string{
+			"custom-annotation": "custom-value",
+		}
+	})
+
+	resObjs := []client.Object{a}
+	subresObjs := []client.Object{a}
+	runtimeObjs := []runtime.Object{}
+	sch := makeTestReconcilerScheme(argoproj.AddToScheme)
+	cl := makeTestReconcilerClient(sch, resObjs, subresObjs, runtimeObjs)
+	r := makeTestReconciler(cl, sch, testclient.NewSimpleClientset())
+
+	assert.NoError(t, r.reconcileRedisStatefulSet(a))
+
+	statefulset := &appsv1.StatefulSet{}
+	assert.NoError(t, r.Get(
+		context.TODO(),
+		types.NamespacedName{
+			Name:      a.Name + "-redis-ha-server",
+			Namespace: a.Namespace,
+		},
+		statefulset))
+
+	// Verify both labels and annotations are applied to pod template
+	assert.Equal(t, "custom-value", statefulset.Spec.Template.Labels["custom-label"])
+	assert.Equal(t, "custom-value", statefulset.Spec.Template.Annotations["custom-annotation"])
+}
